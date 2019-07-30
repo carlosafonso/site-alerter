@@ -7,3 +7,15 @@ The aim of this project is to develop a serverless tool that alerts users when c
 ## Architecture
 
 ![Architecture diagram](arch-diagram.png)
+
+## Deploying the app
+
+Use the included CloudFormation template and deploy it either with the AWS Management Console or the CLI. For the latter:
+
+```
+aws cloudformation create-stack --stack-name '<your stack name>' \
+	--template-body file://./template.yaml \
+	--parameters \
+		ParameterKey=Env,ParameterValue=<your environment name> \
+		ParameterKey=VPCName,ParameterValue=<your VPC name>
+```
