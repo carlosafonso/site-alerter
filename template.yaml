@@ -1,14 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: "Base VPC with two public and two private subnets spanning two AZs"
+Description: "Site Alerter infrastructure"
 
 Parameters:
   VPCName:
-    Description: The name of the VPC being created.
+    Description: The name of the base VPC.
     Type: String
 
   Env:
-    Description: The environment of this stack
+    Description: The environment of this stack.
     Type: String
 
 Mappings:
@@ -423,6 +423,76 @@ Resources:
   #     RouteTableId:
   #       Ref: "PrivateRouteTable1"
 
+  StaticSiteBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Join ['', ['site-alerter-spa-', !Ref Env]]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        - Key: 'Env'
+          Value: !Ref 'Env'
+
+  StaticSiteBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:GetObject'
+            Effect: 'Allow'
+            Resource: !Join ['', [!GetAtt StaticSiteBucket.Arn, '/*']]
+            Principal:
+              CanonicalUser: !GetAtt StaticSiteCloudFrontDistributionOriginAccessIdentity.S3CanonicalUserId
+
+  StaticSiteCloudFrontDistributionOriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: ''
+
+  StaticSiteCloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        PriceClass: 'PriceClass_100'
+        Origins:
+          - DomainName: !GetAtt StaticSiteBucket.DomainName
+            Id: 'static-site-s3-bucket'
+            S3OriginConfig:
+              OriginAccessIdentity: !Join
+                - ''
+                -
+                  - 'origin-access-identity/cloudfront/'
+                  - !Ref StaticSiteCloudFrontDistributionOriginAccessIdentity
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - 'GET'
+            - 'HEAD'
+            - 'OPTIONS'
+          ForwardedValues:
+            Cookies:
+              Forward: 'none'
+            Headers: []
+            QueryString: false
+          TargetOriginId: 'static-site-s3-bucket'
+          ViewerProtocolPolicy: 'allow-all' # consider 'redirect-to-https'
+
+      Tags:
+        - Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        - Key: 'Env'
+          Value: !Ref 'Env'
+
 Outputs:
 
   VPCId:
@@ -465,3 +535,9 @@ Outputs:
     Value: !GetAtt VPC.DefaultSecurityGroup
     Export:
       Name: !Sub "${AWS::Region}-${AWS::StackName}-DefaultSecurityGroup"
+
+  StaticSiteCloudFrontDistribution:
+    Description: 'The domain name of the static site CloudFront distribution'
+    Value: !GetAtt StaticSiteCloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-StaticSiteCloudFrontDistribution"
