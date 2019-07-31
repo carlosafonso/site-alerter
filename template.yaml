@@ -464,6 +464,7 @@ Resources:
       DistributionConfig:
         Enabled: true
         PriceClass: 'PriceClass_100'
+        DefaultRootObject: 'index.html'
         Origins:
           - DomainName: !GetAtt StaticSiteBucket.DomainName
             Id: 'static-site-s3-bucket'
