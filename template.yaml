@@ -423,6 +423,24 @@ Resources:
   #     RouteTableId:
   #       Ref: "PrivateRouteTable1"
 
+  UrlsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Join ['_', [!Ref 'AWS::StackName', !Ref Env, 'Urls']]
+      BillingMode: 'PAY_PER_REQUEST'
+      AttributeDefinitions:
+        - AttributeName: 'pk'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'pk'
+          KeyType: 'HASH'
+      Tags:
+        - Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        - Key: 'Env'
+          Value: !Ref 'Env'
+
   StaticSiteBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
