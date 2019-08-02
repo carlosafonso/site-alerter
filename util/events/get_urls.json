@@ -1,0 +1,14 @@
+{
+  "body": "",
+  "resource": "/{proxy+}",
+  "path": "/urls",
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "queryStringParameters": {},
+  "pathParameters": {
+    "proxy": "/urls"
+  },
+  "stageVariables": {},
+  "headers": {},
+  "requestContext": {}
+}

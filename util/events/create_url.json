@@ -1,0 +1,16 @@
+{
+  "body": "{\"url\": \"https://example.com\"}",
+  "resource": "/{proxy+}",
+  "path": "/urls",
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "queryStringParameters": {},
+  "pathParameters": {
+    "proxy": "/urls"
+  },
+  "stageVariables": {},
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "requestContext": {}
+}

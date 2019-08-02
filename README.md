@@ -19,3 +19,17 @@ aws cloudformation create-stack --stack-name '<your stack name>' \
 		ParameterKey=Env,ParameterValue=<your environment name> \
 		ParameterKey=VPCName,ParameterValue=<your VPC name>
 ```
+
+## Local development
+
+```
+# Start DynamoDB Local (this command works if DDB Local was installed via Brew)
+dynamodb-local -sharedDb
+
+# Create the Urls table
+aws --endpoint-url=http://localhost:8000 \
+	dynamodb create-table --cli-input-json file://./util/urls_table_definition.json
+
+# Start the API
+sam local start-api -n env.dev.json
+```

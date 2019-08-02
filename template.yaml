@@ -1,5 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
+Transform: 'AWS::Serverless-2016-10-31'
+
 Description: "Site Alerter infrastructure"
 
 Parameters:
@@ -440,6 +442,33 @@ Resources:
             Ref: "AWS::StackName"
         - Key: 'Env'
           Value: !Ref 'Env'
+
+  UrlApiHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: urls.lambda_handler
+      Runtime: python3.7
+      Events:
+        GetUrls:
+          Type: Api
+          Properties:
+            Path: /urls
+            Method: GET
+        CreateUrl:
+          Type: Api
+          Properties:
+            Path: /urls
+            Method: POST
+        DeleteUrl:
+          Type: Api
+          Properties:
+            Path: /urls/{id}
+            Method: DELETE
+      Environment:
+        Variables:
+          URL_TABLE_NAME: !Ref UrlsTable
+          DYNAMODB_ENDPOINT: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
 
   StaticSiteBucket:
     Type: 'AWS::S3::Bucket'
