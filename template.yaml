@@ -465,6 +465,10 @@ Resources:
           Properties:
             Path: /urls/{id}
             Method: DELETE
+      Policies:
+        - 'AWSLambdaExecute'
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UrlsTable
       Environment:
         Variables:
           URL_TABLE_NAME: !Ref UrlsTable
