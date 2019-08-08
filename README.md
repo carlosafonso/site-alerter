@@ -10,14 +10,24 @@ The aim of this project is to develop a serverless tool that alerts users when c
 
 ## Deploying the app
 
-Use the included CloudFormation template and deploy it either with the AWS Management Console or the CLI. For the latter:
+Use `sam-local` with the included CloudFormation template.
 
 ```
-aws cloudformation create-stack --stack-name '<your stack name>' \
-	--template-body file://./template.yaml \
-	--parameters \
-		ParameterKey=Env,ParameterValue=<your environment name> \
-		ParameterKey=VPCName,ParameterValue=<your VPC name>
+# first create an S3 bucket to store SAM artifacts
+aws s3 mb <your bucket name>
+
+# build the project
+sam build
+
+# now package the SAM app
+sam package --output-template-file packaged.yaml --s3-bucket <your bucket name>
+
+# and finally deploy it
+aws cloudformation deploy \
+	--template-file /path/to/packaged.yaml \
+	--stack-name <your stack name> \
+	--parameter-overrides "Env=<your environment name>" "VPCName=<your VPC name>" \
+	--capabilities=CAPABILITY_IAM
 ```
 
 ## Local development
