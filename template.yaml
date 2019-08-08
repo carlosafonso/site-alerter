@@ -466,6 +466,10 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: cron(0 0 * * ? *)
+      Policies:
+        - 'AWSLambdaExecute'
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UrlsTable
       Environment:
         Variables:
           URL_TABLE_NAME: !Ref UrlsTable
