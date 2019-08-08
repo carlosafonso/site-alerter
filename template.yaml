@@ -443,12 +443,42 @@ Resources:
         - Key: 'Env'
           Value: !Ref 'Env'
 
+  SharedLibraryLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Join ['_', ['SiteAlerterSharedLayer', !Ref Env]]
+      ContentUri: src/common
+      CompatibleRuntimes:
+        - python3.7
+
+  UrlCrawler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/crawler/
+      Handler: crawler.lambda_handler
+      Runtime: python3.7
+      Layers:
+        - !Ref SharedLibraryLayer
+      # timeout can be lowered once we invoke one function per URL to crawl
+      Timeout: 300
+      Events:
+        DailyScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 0 * * ? *)
+      Environment:
+        Variables:
+          URL_TABLE_NAME: !Ref UrlsTable
+          DYNAMODB_ENDPOINT: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
+
   UrlApiHandler:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: api/
+      CodeUri: src/api/
       Handler: urls.lambda_handler
       Runtime: python3.7
+      Layers:
+        - !Ref SharedLibraryLayer
       Events:
         GetUrls:
           Type: Api
@@ -477,7 +507,7 @@ Resources:
   StaticSiteBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Join ['', ['site-alerter-spa-', !Ref Env]]
+      BucketName: !Join ['-', ['site-alerter-spa', !Ref Env]]
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

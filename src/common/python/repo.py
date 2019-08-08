@@ -1,4 +1,6 @@
 import boto3
+from boto3.dynamodb.conditions import Key
+import datetime
 import uuid
 
 
@@ -36,6 +38,21 @@ class UrlRepository(object):
             Item=item
         )
         return item
+
+    def update_url(self, url):
+        response = self.url_table.update_item(
+            Key={
+                'pk': url['pk']
+            },
+            ConditionExpression=Key('pk').eq(url['pk']),
+            UpdateExpression='SET last_hash = :last_hash, last_checked_at = :last_checked_at',
+            ExpressionAttributeValues={
+                ':last_hash': url['last_hash'],
+                ':last_checked_at': str(datetime.datetime.utcnow())
+            },
+            ReturnValues='ALL_NEW'
+        )
+        return response['Attributes']
 
     def delete_url(self, id):
         return self.url_table.delete_item(
