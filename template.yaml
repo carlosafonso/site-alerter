@@ -220,7 +220,6 @@ Resources:
         - Key: 'Env'
           Value: !Ref 'Env'
 
-
   GatewayToInternet:
     Type: "AWS::EC2::VPCGatewayAttachment"
     Properties:
@@ -443,6 +442,17 @@ Resources:
         - Key: 'Env'
           Value: !Ref 'Env'
 
+  CrawlerJobQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      VisibilityTimeout: 60
+      Tags:
+        - Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        - Key: 'Env'
+          Value: !Ref 'Env'
+
   SharedLibraryLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -451,16 +461,14 @@ Resources:
       CompatibleRuntimes:
         - python3.7
 
-  UrlCrawler:
+  EnqueueCrawlerJobsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/crawler/
-      Handler: crawler.lambda_handler
+      Handler: crawler.scheduled_event_handler
       Runtime: python3.7
       Layers:
         - !Ref SharedLibraryLayer
-      # timeout can be lowered once we invoke one function per URL to crawl
-      Timeout: 300
       Events:
         DailyScheduledEvent:
           Type: Schedule
@@ -470,10 +478,40 @@ Resources:
         - 'AWSLambdaExecute'
         - DynamoDBCrudPolicy:
             TableName: !Ref UrlsTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt CrawlerJobQueue.QueueName
+      Environment:
+        Variables:
+          URL_TABLE_NAME: !Ref UrlsTable
+          CRAWLER_QUEUE_URL: !Ref CrawlerJobQueue
+          DYNAMODB_ENDPOINT: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
+          SQS_ENDPOINT: !Sub https://sqs.${AWS::Region}.amazonaws.com
+
+  CrawlUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/crawler/
+      Handler: crawler.crawler_handler
+      Runtime: python3.7
+      Layers:
+        - !Ref SharedLibraryLayer
+      Events:
+        DailyScheduledEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt CrawlerJobQueue.Arn
+            BatchSize: 10
+      Policies:
+        - 'AWSLambdaExecute'
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UrlsTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt CrawlerJobQueue.QueueName
       Environment:
         Variables:
           URL_TABLE_NAME: !Ref UrlsTable
           DYNAMODB_ENDPOINT: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
+          SQS_ENDPOINT: !Sub https://sqs.${AWS::Region}.amazonaws.com
 
   UrlApiHandler:
     Type: AWS::Serverless::Function
