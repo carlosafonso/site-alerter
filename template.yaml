@@ -8,7 +8,9 @@ Parameters:
   VPCName:
     Description: The name of the base VPC.
     Type: String
-
+  NotificationEmailFrom:
+    Description: The sender address for notification emails.
+    Type: String
   Env:
     Description: The environment of this stack.
     Type: String
@@ -442,6 +444,25 @@ Resources:
         - Key: 'Env'
           Value: !Ref 'Env'
 
+  NotificationEmailTemplate:
+    Type: 'AWS::SES::Template'
+    Properties:
+      Template:
+        TemplateName: !Join ['_', [!Ref 'AWS::StackName', !Ref Env, 'NotificationEmailTemplate']]
+        SubjectPart: 'Change notification'
+        TextPart: |
+          Hello,
+
+          You are receiving this email notification because you are tracking changes to a
+          website, and our most recent check detected that some modifications were made.
+
+          The affected URL is the following:
+
+          {{url}}
+
+          Best,
+          The SiteAlerter Team.
+
   CrawlerJobQueue:
     Type: 'AWS::SQS::Queue'
     Properties:
@@ -510,6 +531,8 @@ Resources:
       Environment:
         Variables:
           URL_TABLE_NAME: !Ref UrlsTable
+          SES_TEMPLATE_NAME: !Ref NotificationEmailTemplate
+          NOTIFICATION_EMAIL_FROM: !Ref NotificationEmailFrom
           DYNAMODB_ENDPOINT: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
           SQS_ENDPOINT: !Sub https://sqs.${AWS::Region}.amazonaws.com
 

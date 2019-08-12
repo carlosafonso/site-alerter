@@ -6,6 +6,7 @@ from repo import UrlRepository
 import requests
 
 sqs = boto3.client('sqs', endpoint_url=os.environ['SQS_ENDPOINT'])
+ses = boto3.client('ses')
 url_repo = UrlRepository(os.environ['URL_TABLE_NAME'], os.environ['DYNAMODB_ENDPOINT'])
 
 
@@ -26,7 +27,16 @@ class UrlCrawler(object):
             if 'last_hash' not in url or url['last_hash'] != current_hash:
                 print("New hash: '{}'".format(current_hash))
                 url['last_hash'] = current_hash
+                print("Updating URL in DB...")
                 self.url_repo.update_url(url)
+                print("Notifying via email...")
+                source = "SiteAlerter Notifications <{}>".format(os.environ['NOTIFICATION_EMAIL_FROM'])
+                ses.send_templated_email(
+                    Source=source,
+                    Destination={'ToAddresses': [os.environ['NOTIFICATION_EMAIL_TO']]},
+                    Template=os.environ['SES_TEMPLATE_NAME'],
+                    TemplateData=json.dumps({'url': url['url']})
+                )
             else:
                 print("Hashes match, no changes detected")
 
