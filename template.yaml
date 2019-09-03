@@ -304,6 +304,9 @@ Resources:
   #     RouteTableId:
   #       Ref: "PrivateRouteTable1"
 
+  UserPool:
+    Type: AWS::Cognito::UserPool
+
   UrlsTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
