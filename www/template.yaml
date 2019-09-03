@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Site Alerter client web application"
+
+Parameters:
+  Env:
+    Description: The environment of this stack.
+    Type: String
+
+Resources:
+  StaticSiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['site-alerter-spa', !Ref Env]]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  StaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+            - 's3:GetObject'
+            Effect: 'Allow'
+            Resource: !Join ['', [!GetAtt StaticSiteBucket.Arn, '/*']]
+            Principal:
+              CanonicalUser: !GetAtt StaticSiteCloudFrontDistributionOriginAccessIdentity.S3CanonicalUserId
+
+  StaticSiteCloudFrontDistributionOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: ''
+
+  StaticSiteCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - DomainName: !GetAtt StaticSiteBucket.DomainName
+            Id: static-site-s3-bucket
+            S3OriginConfig:
+              OriginAccessIdentity: !Join
+                - ''
+                -
+                  - 'origin-access-identity/cloudfront/'
+                  - !Ref StaticSiteCloudFrontDistributionOriginAccessIdentity
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            Headers: []
+            QueryString: false
+          TargetOriginId: static-site-s3-bucket
+          ViewerProtocolPolicy: allow-all # consider 'redirect-to-https'
+
+Outputs:
+  StaticSiteCloudFrontDistribution:
+    Description: 'The domain name of the static site CloudFront distribution'
+    Value: !GetAtt StaticSiteCloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub "${AWS::Region}-${AWS::StackName}-StaticSiteCloudFrontDistribution"
