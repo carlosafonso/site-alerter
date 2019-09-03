@@ -11,6 +11,9 @@ Parameters:
   Env:
     Description: The environment of this stack.
     Type: String
+  CognitoCallbackUrl:
+    Description: The callback URL to be used for Cognito auth flows
+    Type: String
 
 Mappings:
   SubnetConfig:
@@ -306,6 +309,21 @@ Resources:
 
   UserPool:
     Type: AWS::Cognito::UserPool
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AllowedOAuthFlows:
+        - implicit
+      CallbackURLs:
+        - !Ref CognitoCallbackUrl
+      LogoutURLs:
+        - !Join ['', [!Ref CognitoCallbackUrl, 'logout']]
+      ClientName: WebClient
+      GenerateSecret: false
+      SupportedIdentityProviders:
+        - COGNITO
+      UserPoolId: !Ref UserPool
 
   UrlsTable:
     Type: 'AWS::DynamoDB::Table'
