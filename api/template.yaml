@@ -64,6 +64,15 @@ Mappings:
     us-west-2:
       AZs: ["a", "b"]
 
+
+Globals:
+  Api:
+    Auth:
+      DefaultAuthorizer: Cognito
+      Authorizers:
+        Cognito:
+          UserPoolArn: !GetAtt UserPool.Arn
+
 Resources:
   VPC:
     Type: "AWS::EC2::VPC"
