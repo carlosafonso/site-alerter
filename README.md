@@ -26,7 +26,7 @@ sam package --output-template-file packaged.yaml --s3-bucket <your bucket name>
 aws cloudformation deploy \
 	--template-file /path/to/packaged.yaml \
 	--stack-name <your stack name> \
-	--parameter-overrides "Env=<your environment name>" "NotificationEmailFrom=<email address>" \
+	--parameter-overrides "Env=<your environment name>" "NotificationEmailFrom=<email address>" "NotificationEmailTo=<email address>" "CognitoCallbackUrl=<url>" \
 	--capabilities=CAPABILITY_IAM
 ```
 
