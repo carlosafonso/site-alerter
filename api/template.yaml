@@ -427,6 +427,12 @@ Resources:
             TableName: !Ref UrlsTable
         - SQSPollerPolicy:
             QueueName: !GetAtt CrawlerJobQueue.QueueName
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "ses:SendTemplatedEmail"
+              Resource: "*"
       Environment:
         Variables:
           URL_TABLE_NAME: !Ref UrlsTable
