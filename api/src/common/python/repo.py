@@ -48,7 +48,7 @@ class UrlRepository(object):
             UpdateExpression='SET last_hash = :last_hash, last_checked_at = :last_checked_at',
             ExpressionAttributeValues={
                 ':last_hash': url['last_hash'],
-                ':last_checked_at': str(datetime.datetime.utcnow())
+                ':last_checked_at': datetime.datetime.utcnow().isoformat()
             },
             ReturnValues='ALL_NEW'
         )
