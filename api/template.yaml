@@ -70,6 +70,10 @@ Mappings:
 
 Globals:
   Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowMethods: "'POST, GET, OPTIONS, DELETE, PUT'"
+      AllowHeaders: "'Content-Type'"
     Auth:
       DefaultAuthorizer: Cognito
       Authorizers:
