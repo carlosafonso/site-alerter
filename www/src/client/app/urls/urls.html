@@ -1,0 +1,36 @@
+<ui-view>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="pull-right">
+        <a href="#" class="btn btn-sm btn-primary" ui-sref=".create"><i class="fa fa-plus"></i> Add new URL</a>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+    <div class="panel-body">
+      <h1 class="section-title">URLs</h1>
+      <p>These are the URLs that you are currently tracking.</p>
+      <div class="well" ng-show="vm.urls.length === 0">
+        <h4>No URLs.</h4>
+        <p>You are currently tracking no URLs.</p>
+      </div>
+      <table class="table table-condensed" ng-show="vm.urls.length > 0">
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Last check</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="url in vm.urls">
+            <td><a ng-href="{{ ::url.url }}">{{ ::url.url }}</a></td>
+            <td>{{ (url.last_checked_at | date:'medium') || 'Not yet checked' }}</td>
+            <td class="table-actions">
+              <a href="" class="text-danger" ng-click="vm.deleteUrl(url)"><i class="fa fa-trash"></i> Delete</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ui-view>

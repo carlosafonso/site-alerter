@@ -1,0 +1,22 @@
+<ui-view>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h5 class="panel-title">Create URL</h5>
+    </div>
+    <div class="panel-body">
+      <form ng-submit="vm.createUrl()">
+        <div class="form-group">
+          <label for="url">URL</label>
+          <input class="form-control"
+            type="text"
+            name="url"
+            id="url"
+            placeholder="https://www.example.com"
+            ng-model="vm.newUrl.url"/>
+          <p class="help-block">This is the URL that will be checked by our crawler.</p>
+        </div>
+        <button type="submit" class="btn btn-success">Create</button>
+      </form>
+    </div>
+  </div>
+</ui-view>
