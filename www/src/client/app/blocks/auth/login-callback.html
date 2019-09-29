@@ -1,0 +1,10 @@
+<ui-view>
+  <div class="alert alert-info" ng-show="vm.success === true">
+    <strong>Success!</strong>
+    <p>We are redirecting you to the home page.</p>
+  </div>
+  <div class="alert alert-danger" ng-show="vm.success === false">
+    <strong>An error occurred.</strong>
+    <p>We have been unable to validate your authentication credentials.</p>
+  </div>
+</ui-view>

@@ -10,11 +10,17 @@
   /* @ngInject */
   function appRun(routerHelper) {
     routerHelper.configureStates(getStates());
-    console.log(getStates());
   }
 
   function getStates() {
     return [
+      {
+        state: 'default',
+        config: {
+          url: '/',
+          redirectTo: 'urls'
+        }
+      },
       {
         state: 'urls',
         config: {
@@ -31,6 +37,9 @@
             urls: ['Url', function (Url) {
               return Url.query().$promise;
             }]
+          },
+          data: {
+            requiresAuth: true
           }
         }
       },

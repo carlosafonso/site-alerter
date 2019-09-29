@@ -6,9 +6,9 @@
     .module('blocks.router')
     .provider('routerHelper', routerHelperProvider);
 
-  routerHelperProvider.$inject = ['$locationProvider', '$stateProvider', '$urlRouterProvider'];
+  routerHelperProvider.$inject = ['$locationProvider', '$transitionsProvider', '$stateProvider', '$urlRouterProvider'];
   /* @ngInject */
-  function routerHelperProvider($locationProvider, $stateProvider, $urlRouterProvider) {
+  function routerHelperProvider($locationProvider, $transitionsProvider, $stateProvider, $urlRouterProvider) {
     /* jshint validthis:true */
     var config = {
       docTitle: undefined,
@@ -26,9 +26,9 @@
     };
 
     this.$get = RouterHelper;
-    RouterHelper.$inject = ['$location', '$rootScope', '$state', 'logger'];
+    RouterHelper.$inject = ['COGNITO_LOGIN_URL', '$window', '$location', '$rootScope', '$transitions', '$state', 'logger', 'AuthService'];
     /* @ngInject */
-    function RouterHelper($location, $rootScope, $state, logger) {
+    function RouterHelper(COGNITO_LOGIN_URL, $window, $location, $rootScope, $transitions, $state, logger, AuthService) {
       var handlingStateChangeError = false;
       var hasOtherwise = false;
       var stateCounts = {
@@ -83,8 +83,31 @@
         );
       }
 
+      function registerAuthenticationCheck() {
+        /*
+         * Check whether the target state needs authentication. If it does,
+         * and the user does not seem to be already authenticated, redirect
+         * them to the Cognito login page.
+         *
+         * (This makes use of $transitions, which is the new preferred way of
+         * dealing with transition hooks instead of $rootScope.)
+         */
+        $transitions.onBefore(
+          {},
+          (transition) => {
+            let targetStateData = transition.to().data;
+            if (targetStateData && targetStateData.requiresAuth === true) {
+              if (!AuthService.isAuthenticated()) {
+                $window.location.href = COGNITO_LOGIN_URL;
+              }
+            }
+          }
+        );
+      }
+
       function init() {
         handleRoutingErrors();
+        registerAuthenticationCheck();
         updateDocTitle();
       }
 

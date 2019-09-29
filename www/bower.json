@@ -22,10 +22,11 @@
     "angular-animate": "~1.5.9",
     "angular-sanitize": "~1.5.9",
     "angular-resource": "~1.5.9",
+    "angular-messages": "~1.5.9",
     "bootstrap": "~3.3.6",
     "font-awesome": "~4.5.0",
     "moment": "~2.12.0",
-    "angular-ui-router": "~0.4.2",
+    "angular-ui-router": "~1.0.22",
     "toastr": "~2.1.2",
     "angular-bootstrap": "~1.2.5"
   },
@@ -42,6 +43,12 @@
     "font-awesome": {
       "main": [
         "css/font-awesome.css"
+      ]
+    },
+    "angular-ui-router": {
+      "main": [
+        "release/angular-ui-router.js",
+        "release/stateEvents.js"
       ]
     }
   }
