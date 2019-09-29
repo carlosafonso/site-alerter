@@ -4,16 +4,24 @@
       <h5 class="panel-title">Create URL</h5>
     </div>
     <div class="panel-body">
-      <form ng-submit="vm.createUrl()">
-        <div class="form-group">
-          <label for="url">URL</label>
+      <form name="vm.createUrlForm" ng-submit="vm.createUrl()" novalidate>
+        <div class="form-group has-feedback"
+          ng-class="{'has-error': vm.createUrlForm.url.$invalid && !vm.createUrlForm.url.$pristine}">
+          <label for="url" class="control-label">URL</label>
           <input class="form-control"
-            type="text"
+            type="url"
             name="url"
             id="url"
+            required
             placeholder="https://www.example.com"
-            ng-model="vm.newUrl.url"/>
-          <p class="help-block">This is the URL that will be checked by our crawler.</p>
+            ng-model="vm.newUrl.url"
+            ng-model-options="{updateOn: 'blur'}"/>
+          <p class="help-block" ng-hide="vm.createUrlForm.$pristine">
+            <ng-messages for="vm.createUrlForm.url.$error">
+              <ng-message when="required">This field is required.</ng-message>
+              <ng-message when="url">Please, enter a valid URL.</ng-message>
+            </ng-messages>
+          </p>
         </div>
         <button type="submit" class="btn btn-success">Create</button>
       </form>

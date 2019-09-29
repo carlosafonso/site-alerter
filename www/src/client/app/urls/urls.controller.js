@@ -17,7 +17,7 @@
     activate();
 
     function activate() {
-      logger.info('Activated URLs View');
+      //
     }
 
     function getUrls() {

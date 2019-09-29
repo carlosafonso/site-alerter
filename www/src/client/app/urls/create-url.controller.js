@@ -17,11 +17,13 @@
     activate();
 
     function activate() {
-      logger.info('Activated URLs View');
+      //
     }
 
     function createUrl() {
-      Url.save({url: vm.newUrl.url}).$promise.then(() => $state.go('urls'));
+      if (vm.createUrlForm.$valid) {
+        Url.save({url: vm.newUrl.url}).$promise.then(() => $state.go('urls'));
+      }
     }
   }
 })();
