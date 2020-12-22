@@ -70,7 +70,7 @@
     "lodash": "~3.10.0",
     "method-override": "~2.3.4",
     "mocha": "~2.2.5",
-    "node-notifier": "~4.0.3",
+    "node-notifier": "~8.0.1",
     "plato": "~1.2.0",
     "q": "~1.0.1",
     "semver": "~5.3.0",
