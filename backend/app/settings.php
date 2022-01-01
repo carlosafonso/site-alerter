@@ -17,7 +17,12 @@ return function (ContainerBuilder $containerBuilder) {
                 'logErrorDetails'     => false,
                 'logger' => [
                     'name' => 'slim-app',
-                    'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+                    // In AWS Lambda the only writeable directory is /tmp, thus
+                    // we must ensure that logs are written to stdout to avoid
+                    // errors. We check that we are running inside a Lambda
+                    // function by checking the existence of the
+                    // LAMBDA_TASK_ROOT env var.
+                    'path' => isset($_ENV['docker']) || isset($_ENV['LAMBDA_TASK_ROOT']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
                     'level' => Logger::DEBUG,
                 ],
             ]);

@@ -16,3 +16,19 @@ services:
         volumes:
             - .:/var/www
             - logs:/var/www/logs
+
+    web:
+        image: bref/fpm-dev-gateway
+        ports:
+            - '8000:80'
+        volumes:
+            - .:/var/task
+        depends_on:
+            - php
+        environment:
+            HANDLER: public/index.php
+
+    php:
+        image: bref/php-80-fpm-dev
+        volumes:
+            - .:/var/task:ro
