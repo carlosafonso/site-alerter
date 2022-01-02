@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
+use App\Jobs\JobDispatcher;
+use Aws\Sqs\SqsClient;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -24,6 +26,21 @@ return function (ContainerBuilder $containerBuilder) {
             $logger->pushHandler($handler);
 
             return $logger;
+        },
+
+        JobDispatcher::class => function (ContainerInterface $c) {
+            $settings = $c->get(SettingsInterface::class);
+
+            $sqs = new SqsClient([
+                'version' => '2012-11-05',
+                'endpoint' => $settings->get('app.aws.endpoint'),
+                'region' => $settings->get('app.aws.region'),
+                'credentials' => $settings->get('app.aws.credentials'),
+            ]);
+
+            $queueUrl = $settings->get('app.aws.sqsQueueUrl');
+
+            return new JobDispatcher($sqs, $queueUrl);
         },
     ]);
 };

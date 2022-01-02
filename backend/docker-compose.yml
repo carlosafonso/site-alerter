@@ -6,16 +6,20 @@ volumes:
 
 services:
     slim:
-        image: php:7-alpine
+        image: php:8.0-alpine
         working_dir: /var/www
         command: php -S 0.0.0.0:8080 -t public
         environment:
             docker: "true"
+            AWS_REGION: us-east-1
+            APP_SQS_QUEUE_URL: http://localstack:4566/000000000000/sitealerter
         ports:
             - 8080:8080
         volumes:
             - .:/var/www
             - logs:/var/www/logs
+        networks:
+            - sitealerter
 
     web:
         image: bref/fpm-dev-gateway
@@ -27,8 +31,39 @@ services:
             - php
         environment:
             HANDLER: public/index.php
+        networks:
+            - sitealerter
 
     php:
         image: bref/php-80-fpm-dev
         volumes:
             - .:/var/task:ro
+        networks:
+            - sitealerter
+
+    localstack:
+        container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+        image: localstack/localstack
+        ports:
+            - "127.0.0.1:4566:4566"
+            - "127.0.0.1:4571:4571"
+        environment:
+            - SERVICES=${SERVICES-}
+            - DEBUG=${DEBUG-}
+            - DATA_DIR=${DATA_DIR-}
+            - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+            - HOST_TMP_FOLDER=${TMPDIR:-/tmp/}localstack
+            - DOCKER_HOST=unix:///var/run/docker.sock
+            # This specifies what hostname is returned in queue URLs.
+            - HOSTNAME_EXTERNAL=localstack
+        volumes:
+            - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+            - "/var/run/docker.sock:/var/run/docker.sock"
+            # Localstack will execute any script here for bootstrapping.
+            - ./localstack_setup:/docker-entrypoint-initaws.d/
+        networks:
+            - sitealerter
+
+networks:
+    sitealerter:
+        driver: bridge
